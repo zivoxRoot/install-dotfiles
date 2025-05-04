@@ -1,0 +1,161 @@
+/* Import pywal16 colors */
+@import "/home/theophile/.cache/wal/colors-waybar.css";
+
+/* General styles */
+* {
+	font-family: "JetBrains Mono NerdFonts", sans-serif;
+	font-size: 12px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	margin-left: 8px;
+	margin-right: 8px;
+	border-radius: 30px;
+	border: none;
+	border-radius: 50px;
+	color: @foreground;
+	font-weight: bold;
+}
+
+window#waybar {
+	background: transparent;
+}
+
+tooltip {
+	background-color: @color2;
+	border-radius: 10px;
+}
+
+tooltip label {
+	color: white;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+/* Clock */
+#clock {
+	margin-right: 10px;
+	margin-left: 5px;
+	padding-right: 18px;
+	padding-left: 18px;
+	background: @color2;
+	transition: 0.3s;
+}
+
+#clock:hover {
+	background: @color4;
+}
+
+/* workspaces */
+#workspaces {
+	padding-right: 5px;
+	padding-left: 5px;
+	background-color: @background;
+}
+
+#workspaces button {
+	padding: 2px 2px;
+	margin: 5px 3px;
+	border-radius: 30px;
+	background-color: @color8;
+	transition: all 0.4s;
+	box-shadow: none;
+}
+
+#workspaces button.active {
+	background-color: @color2;
+	padding: 4px 15px;
+	transition: all 0.4s;
+}
+
+#workspaces button:hover {
+	background: @color5;
+	border: none;
+}
+
+/* Notifications */
+#custom-notification {
+	margin-right: 5px;
+	margin-left: 5px;
+	padding-right: 18px;
+	padding-left: 18px;
+	background-color: @background;
+}
+
+/* Group-network*/
+#net {
+	margin-right: 5px;
+	margin-left: 5px;
+	padding-right: 10px;
+	padding-left: 10px;
+	background-color: @background;
+}
+
+#bluetooth,
+#network {
+	margin-right: 10px;
+	margin-left: 10px;
+}
+
+/* Group-luminosity */
+#luminosity {
+	margin-right: 5px;
+	margin-left: 5px;
+	padding-right: 10px;
+	padding-left: 10px;
+	background-color: @background;
+}
+
+/* Backlight */
+#backlight-slider slider {
+	min-height: 0px;
+	min-width: 0px;
+	opacity: 0;
+	background-image: none;
+	border: none;
+	box-shadow: none;
+}
+
+#backlight-slider trough {
+	min-height: 10px;
+	min-width: 25px;
+	border-radius: 5px;
+	background-color: @foreground;
+}
+
+#backlight-slider highlight {
+	min-width: 10px;
+	border-radius: 5px;
+	background-color: @color2;
+}
+
+/* Hyprsunset */
+#custom-hyprsunset {
+    font-size: 20px;
+    color: white;
+}
+
+/* Volume */
+#wireplumber {
+	padding-right: 10px;
+	padding-left: 10px;
+	background-color: @background;
+}
+
+/* Battery */
+#battery {
+	padding-right: 18px;
+	padding-left: 18px;
+	margin-right: 5px;
+	margin-left: 5px;
+	padding-right: 10px;
+	padding-left: 10px;
+	background-color: @background;
+}
+
+#battery.warning {
+	color: @color2;
+}
+
+#battery.critical {
+	color: red;
+}

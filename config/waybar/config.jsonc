@@ -1,0 +1,134 @@
+{
+	// General
+	"position": "top",
+	"layer": "top",
+	"modules-left": [ "clock" ],
+	"modules-center": [ "hyprland/workspaces" ],
+	"modules-right": [ "custom/notification", "group/net", "group/luminosity", "wireplumber", "battery" ],
+
+	// Clock
+	"clock": {
+		"format": "{:%R}",
+		"tooltip-format": "{:%A %d %Y - %R}"
+	},
+
+	// Workspaces
+	"hyprland/workspaces": {
+		"format": "{icon}",
+		"on-click": "activate",
+		"format-icons": {
+			"urgent": " ",
+			"active": " ",
+			"default": " "
+		},
+	},
+
+	// Notification
+	"custom/notification": {
+		"tooltip": false,
+		"format": "{icon}",
+		"format-icons": {
+			"notification": "<span foreground='red'><sup></sup></span>",
+			"none": "",
+			"dnd-notification": "<span foreground='red'><sup></sup></span>",
+			"dnd-none": "",
+			"inhibited-notification": "<span foreground='red'><sup></sup></span>",
+			"inhibited-none": "",
+			"dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+			"dnd-inhibited-none": ""
+		},
+		"return-type": "json",
+		"exec-if": "which swaync-client",
+		"exec": "swaync-client -swb",
+		"on-click": "swaync-client -t -sw",
+		"on-click-right": "swaync-client -d -sw",
+		"escape": true
+	},
+
+	// Group net
+	"group/net": {
+		"orientation": "horizontal",
+		"modules": [
+			"network",
+			"bluetooth"
+		]
+	},
+
+	// Network
+	"network": {
+		"format-wifi": "{icon}    {signalStrength}%",
+		"format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+		"format-ethernet": "󰈀",
+		"format-linked": "{ifname} 󰈀",
+		"format-disconnected": "󰤫",
+		"tooltip-format": " {ifname} via {gwaddri}",
+		"tooltip-format-wifi": "   {ifname} @ {essid}\nIP: {ipaddr}\nStrength: {signalStrength}%\nFreq: {frequency}MHz\nUp: {bandwidthUpBits} Down: {bandwidthDownBits}",
+		"tooltip-format-ethernet": " {ifname}\nIP: {ipaddr}\n up: {bandwidthUpBits} down: {bandwidthDownBits}",
+		"tooltip-format-disconnected": "Disconnected",
+		"on-click": "nm-connection-editor"
+	},
+
+	// Bluetooth
+	"bluetooth": {
+		"format-on": "",
+		"format-off": "󰂲",
+		"format-disabled": "󰂲",
+		"format-connected": " {device_alias}",
+		"format-connected-battery": " {device_alias} {device_battery_percentage}%",
+		"tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+		"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+		"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+		"tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+		"on-click": "blueman-manager"
+	},	
+
+	// Group luminosity
+	"group/luminosity": {
+		"orientation": "horizontal",
+		"modules": [
+			"backlight",
+			"custom/hyprsunset"
+		]
+	},
+
+	// Luminosity
+	"backlight": {
+		"device": "amd_backlight",
+		"format": "{icon}    {percent}",
+		"format-icons": ["󰃚", "󰃝", "󰃟", "󰃠"],
+		"tooltip": true,
+		"tooltip-format": "Screen luminosity"
+	},
+
+	// Hyprsunset
+	"custom/hyprsunset": {
+        "format": "{}",
+        "exec": "~/.config/waybar/check-hyprsunset.sh",
+        "interval": 1,  // Update every seconds
+		"tooltip": true,
+		"tooltip-format": "Dark/Light mode"
+    },
+
+	// Volume
+	"wireplumber": {
+		"format": " {icon}    {volume}% ",
+		"format-muted": " ",
+		"format-icons": ["", "", ""],
+		"tooltip": false
+	},
+
+	// Battery
+	"battery": {
+		"interval": 30,
+		"states": {
+			"warning": 30,
+			"critical": 15
+		},
+		"format": "{icon}    {capacity}%",
+		"format-icons": ["", "", "", "", ""],
+		"format-charging": "{capacity}% 󰂄",
+		"max-length": 25,
+		"tooltip": true,
+		"tooltip-format": "{timeTo}"
+	},
+}

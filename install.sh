@@ -3,111 +3,130 @@
 # Exit on error
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
-# Function to check if a command succeeded
-check_status() {
-	if [ $? -ne 0 ]; then
-		echo -e "${RED}Error: $1 failed. Exiting.${NC}"
-		exit 1
-	fi
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
 }
 
-# Function to prompt for yes/no and return 0 (yes) or 1 (no)
-prompt_yes_no() {
-	while true; do
-		read -p "$1 (y/n): " yn
-		case $yn in
-			[Yy]* ) return 0;;
-			[Nn]* ) return 1;;
-			* ) echo "Please answer yes (y) or no (n).";;
-		esac
-	done
+# Function to check if a package is installed
+package_installed() {
+    pacman -Q "$1" >/dev/null 2>&1
 }
 
-# Update system and install base dependencies
-echo -e "${GREEN}Updating system and installing base packages...${NC}"
-sudo pacman -Syu --noconfirm
-sudo pacman -S --needed --noconfirm base-devel git hyprland waybar xdg-desktop-portal-hyprland \
-	polkit-gnome dunst sddm qt5-wayland qt6-wayland pipewire pipewire-pulse
-check_status "Base package installation"
+# Function to detect AUR helper
+detect_aur_helper() {
+    for helper in paru yay; do
+        if command_exists "$helper"; then
+            echo "$helper"
+            return 0
+        fi
+    done
+    return 1
+}
 
-# Check if an AUR helper is already installed
-echo -e "${GREEN}Checking for existing AUR helper...${NC}"
-if command -v paru > /dev/null 2>&1; then
-	AUR_HELPER="paru"
-	echo -e "${GREEN}paru is already installed. Using it.${NC}"
-elif command -v yay > /dev/null 2>&1; then
-	AUR_HELPER="yay"
-	echo -e "${GREEN}yay is already installed. Using it.${NC}"
-else
-	# Choose AUR helper
-	echo -e "${GREEN}Select an AUR helper:${NC}"
-	echo "1) paru (default)"
-	echo "2) yay"
-	read -p "Enter your choice (1 or 2): " aur_choice
+# Function to install paru if no AUR helper is found
+install_paru() {
+    echo "No AUR helper found. Installing paru..."
+    sudo pacman -S --needed base-devel git
+    git clone https://aur.archlinux.org/paru.git /tmp/paru
+    cd /tmp/paru
+    makepkg -si --noconfirm
+    cd -
+    rm -rf /tmp/paru
+}
 
-	case $aur_choice in
-		2)
-			AUR_HELPER="yay"
-			echo -e "${GREEN}Installing yay...${NC}"
-			git clone https://aur.archlinux.org/yay.git /tmp/yay
-			cd /tmp/yay
-			makepkg -si --noconfirm
-			check_status "yay installation"
-			cd -
-			;;
-		*)
-			AUR_HELPER="paru"
-			echo -e "${GREEN}Installing paru...${NC}"
-			git clone https://aur.archlinux.org/paru.git /tmp/paru
-			cd /tmp/paru
-			makepkg -si --noconfirm
-			check_status "paru installation"
-			cd -
-			;;
-	esac
+# List of official Arch packages
+PACMAN_PACKAGES=(
+    hyprland
+    waybar
+    xdg-desktop-portal-hyprland
+	fastfetch
+	bat
+    polkit-gnome
+    qt5-wayland
+    qt6-wayland
+    sddm
+)
 
-# Install AUR packages for Hyprland setup
-echo -e "${GREEN}Installing AUR packages with $AUR_HELPER...${NC}"
-$AUR_HELPER -S --noconfirm hyprpaper hyprsunset swww rofi-lbonn-wayland-git
-check_status "AUR package installation"
+# List of AUR packages
+AUR_PACKAGES=(
+	zen-browser-bin
+    hyprlock
+)
 
-# Optional packages
-echo -e "${GREEN}Optional packages installation:${NC}"
+# Services to enable
+SERVICES=(
+    sddm
+)
 
-# Terminal emulator
-if prompt_yes_no "Install Alacritty terminal?"; then
-	sudo pacman -S --noconfirm alacritty
-	check_status "Alacritty installation"
+# Check if script is run from the repo directory
+if [[ ! -d "configs" ]]; then
+    echo "Error: 'configs' directory not found. Please run this script from the repository root."
+    exit 1
 fi
 
-# Web browser
-if prompt_yes_no "Install Firefox?"; then
-	sudo pacman -S --noconfirm firefox
-	check_status "Firefox installation"
+# Check if script has sudo
+if ! sudo -n true 2>/dev/null; then
+    echo "Error: This script requires sudo privileges."
+    exit 1
 fi
 
-# File manager
-if prompt_yes_no "Install Thunar file manager?"; then
-	sudo pacman -S --noconfirm thunar
-	check_status "Thunar installation"
+# Update system
+echo "Updating system..."
+sudo pacman -Syu --needed --noconfirm
+
+# Detect or install AUR helper
+AUR_HELPER=$(detect_aur_helper)
+if [[ -z "$AUR_HELPER" ]]; then
+    install_paru
+    AUR_HELPER="paru"
 fi
+echo "Using AUR helper: $AUR_HELPER"
 
-# Text editor
-if prompt_yes_no "Install Neovim?"; then
-	sudo pacman -S --noconfirm neovim
-	check_status "Neovim installation"
-fi
+# Install official Arch packages
+echo "Installing official Arch packages..."
+for pkg in "${PACMAN_PACKAGES[@]}"; do
+    if package_installed "$pkg"; then
+        echo "$pkg is already installed, skipping..."
+    else
+        echo "Installing $pkg..."
+        sudo pacman -S --needed --noconfirm "$pkg"
+    fi
+done
 
-# Enable SDDM
-echo -e "${GREEN}Enabling SDDM display manager...${NC}"
-sudo systemctl enable sddm
-check_status "SDDM enabling"
+# Install AUR packages
+echo "Installing AUR packages..."
+for pkg in "${AUR_PACKAGES[@]}"; do
+    if package_installed "$pkg"; then
+        echo "$pkg is already installed, skipping..."
+    else
+        echo "Installing $pkg..."
+        "$AUR_HELPER" -S --noconfirm "$pkg"
+    fi
+done
 
-# Final message
-echo -e "${GREEN}Installation complete! Reboot to start Hyprland.${NC}"
-echo "You may want to copy your Hyprland/Waybar configs to ~/.config/ after reboot."
+# Copy configuration files
+echo "Copying configuration files..."
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
+mkdir -p "$CONFIG_DIR"
+cp -r configs/* "$CONFIG_DIR/"
+echo "Configuration files copied to ~/{$CONFIG_DIR}/"
+
+# Enable and start services
+echo "Enabling and starting services..."
+for service in "${SERVICES[@]}"; do
+    if systemctl is-enabled --quiet "$service"; then
+        echo "$service is already enabled, skipping..."
+    else
+        echo "Enabling $service..."
+        sudo systemctl enable "$service"
+    fi
+    if systemctl is-active --quiet "$service"; then
+        echo "$service is already running, skipping..."
+    else
+        echo "Starting $service..."
+        sudo systemctl start "$service"
+    fi
+done
+
+echo "Installation complete! You can now log in with Hyprland via SDDM."
